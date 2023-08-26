@@ -21,6 +21,11 @@
             android:name=".EditToDoItemActivity"
             android:label="@string/app_name" >
         </activity>
+        <activity
+            android:name=".AddItemActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat.Light">
+        </activity>
     </application>
 
 </manifest>

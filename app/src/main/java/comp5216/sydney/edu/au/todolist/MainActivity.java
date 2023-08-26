@@ -19,6 +19,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Reference the "listView" variable to the id "lstView" in the layout
         listView = (ListView) findViewById(R.id.lstView);
-        addItemEditText = (EditText) findViewById(R.id.txtNewItem);
+        //addItemEditText = (EditText) findViewById(R.id.txtNewItem);
 
         // Create an ArrayList of String
         //items = new ArrayList<String>();
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
         //readItemsFromFile();
 
+        //Connect and read from Database
         db = ToDoItemDB.getDatabase(this.getApplication().getApplicationContext());
         toDoItemDao = db.toDoItemDao();
 
@@ -72,15 +74,29 @@ public class MainActivity extends AppCompatActivity {
         setupListViewListener();
     }
 
+    ActivityResultLauncher<Intent> mLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                /*
+                if (result.getResultCode() == RESULT_OK) {
+                    String date = data.getStringExtra("date");
+                    String item = data.getStringExtra("item");
+                    groceryData.putIfAbsent(date, new ArrayList<>());
+                    groceryData.get(date).add(item);
+                }*/
+            }
+    );
+
     public void onAddItemClick(View view) {
-        String toAddString = addItemEditText.getText().toString();
-        if (toAddString != null && toAddString.length() > 0) {
-            itemsAdapter.add(toAddString); // Add text to list view adapter
-            addItemEditText.setText("");
-            //saveItemsToFile();
-            saveItemsToDatabase();
+        Intent intent = new Intent(MainActivity.this, AddItemActivity.class);
+        if (intent != null) {
+
+            // bring up the second activity
+            mLauncher.launch(intent);
+            itemsAdapter.notifyDataSetChanged();
         }
     }
+
 
     private void setupListViewListener() {
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -203,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
                     System.out.println("I'll run in a separate thread than the main thread.");
                 }
             });
-// Block and wait for the future to complete
+            // Block and wait for the future to complete
             future.get();
         }
         catch(Exception ex) {
@@ -212,13 +228,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveItemsToDatabase() {
-//Use asynchronous task to run query on the background to avoid locking UI
+        //Use asynchronous task to run query on the background to avoid locking UI
         try {
-// Run a task specified by a Runnable Object asynchronously.
+        // Run a task specified by a Runnable Object asynchronously.
             CompletableFuture<Void> future = CompletableFuture.runAsync(new Runnable() {
                 @Override
                 public void run() {
-//delete all items and re-insert
+                    //delete all items and re-insert
                     toDoItemDao.deleteAll();
                     for (String todo : items) {
                         ToDoItem item = new ToDoItem(todo);
@@ -230,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                 });
 
 
-// Block and wait for the future to complete
+            // Block and wait for the future to complete
             future.get();
         }
         catch(Exception ex) {
